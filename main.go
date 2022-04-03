@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"pan_task/api"
 	"pan_task/config"
+	"pan_task/db"
+	"path"
 )
 
 func readConfigFile(path string, conf *config.Config) error {
@@ -27,6 +29,12 @@ func init() {
 		panic(err.Error())
 	}
 
+	api.InitRouter()
+
+	if err := db.InitDB(path.Join("..", config.AppConfig.DBPath)); err != nil {
+		panic(err.Error())
+	}
+
 	api.ProgramStats = api.Stats{
 		TotalWords:          0,
 		TotalRequests:       0,
@@ -35,6 +43,5 @@ func init() {
 }
 
 func main() {
-	router := api.InitRouter()
-	router.Run(fmt.Sprintf("%s:%s", config.AppConfig.Host, config.AppConfig.Port))
+	api.Router.Run(fmt.Sprintf("%s:%s", config.AppConfig.Host, config.AppConfig.Port))
 }

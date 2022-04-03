@@ -17,3 +17,8 @@ type Stats struct {
 func GetStats(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, ProgramStats)
 }
+
+// func GetSimilarWords(c *gin.Context) {
+// 	word := c.Query("word")
+// 	fmt.Println(word)
+// }

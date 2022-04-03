@@ -1,4 +1,5 @@
 {
     "host":"localhost",
-    "port": "8000"
+    "port": "8000",
+    "db_path": "words_clean.txt"
 }
