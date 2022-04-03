@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"pan_task/api"
 	"pan_task/config"
 )
 
@@ -22,12 +23,18 @@ func readConfigFile(path string, conf *config.Config) error {
 }
 
 func init() {
-	err := readConfigFile("config/local.json", config.AppConfig)
-	if err != nil {
+	if err := readConfigFile("config/local.json", config.AppConfig); err != nil {
 		panic(err.Error())
+	}
+
+	api.ProgramStats = api.Stats{
+		TotalWords:          0,
+		TotalRequests:       0,
+		AvgProcessingTimeNs: 0,
 	}
 }
 
 func main() {
-	fmt.Printf("%s:%s\n", config.AppConfig.Host, config.AppConfig.Port)
+	router := api.InitRouter()
+	router.Run(fmt.Sprintf("%s:%s", config.AppConfig.Host, config.AppConfig.Port))
 }
