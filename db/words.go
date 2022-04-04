@@ -2,9 +2,12 @@ package db
 
 import (
 	"bufio"
-	"log"
+	"net/http"
 	"os"
+	"pan_task/stats"
 	"sort"
+
+	"github.com/gin-gonic/gin"
 )
 
 type sortRunes []rune
@@ -38,9 +41,43 @@ func InitDB(dbPath string) error {
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
+	wordsCount := int64(0)
 	for scanner.Scan() {
 		scannedWord := scanner.Text()
 		sortedWord := sortString(scannedWord)
 		DB[sortedWord] = append(DB[sortedWord], scannedWord)
+		wordsCount++
 	}
+
+	stats.SetTotalWords(wordsCount)
+	return nil
+}
+
+//FIX BUG IN FUNCTION
+func removeElementByValue(arr []string, elem string) []string {
+	for i, val := range arr {
+		if elem == val {
+			if len(arr) > 1 {
+				// Secure last element
+				return append(arr[:i], arr[i+1:]...)
+			} else {
+				// The case where there is only one element on the array and it is the value itself
+				return []string{}
+			}
+		}
+	}
+
+	return arr
+}
+
+func GetSimilarWords(c *gin.Context) {
+	word := c.Query("word")
+	similarWordsList, ok := DB[sortString(word)]
+	if !ok {
+		c.IndentedJSON(http.StatusOK, gin.H{"similar": []string{}})
+		return
+	}
+
+	similarWordsList = removeElementByValue(similarWordsList, word)
+	c.JSON(http.StatusOK, gin.H{"similar": similarWordsList})
 }

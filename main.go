@@ -7,7 +7,7 @@ import (
 	"pan_task/api"
 	"pan_task/config"
 	"pan_task/db"
-	"path"
+	"pan_task/stats"
 )
 
 func readConfigFile(path string, conf *config.Config) error {
@@ -31,14 +31,10 @@ func init() {
 
 	api.InitRouter()
 
-	if err := db.InitDB(path.Join("..", config.AppConfig.DBPath)); err != nil {
-		panic(err.Error())
-	}
+	stats.InitStats()
 
-	api.ProgramStats = api.Stats{
-		TotalWords:          0,
-		TotalRequests:       0,
-		AvgProcessingTimeNs: 0,
+	if err := db.InitDB(config.AppConfig.DBPath); err != nil {
+		panic(err.Error())
 	}
 }
 
