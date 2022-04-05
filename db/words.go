@@ -77,7 +77,8 @@ func GetSimilarWords(c *gin.Context) {
 		c.IndentedJSON(http.StatusOK, gin.H{"similar": []string{}})
 		return
 	}
-
-	similarWordsList = removeElementByValue(similarWordsList, word)
-	c.JSON(http.StatusOK, gin.H{"similar": similarWordsList})
+	tempWordsList := make([]string, len(similarWordsList))
+	copy(tempWordsList, similarWordsList)
+	tempWordsList = removeElementByValue(tempWordsList, word)
+	c.JSON(http.StatusOK, gin.H{"similar": tempWordsList})
 }
