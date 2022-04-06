@@ -114,3 +114,36 @@ func Test_InitDB_db_false_path(t *testing.T) {
 	err := db.InitDB("false_path")
 	assert.Error(t, err)
 }
+
+func Benchmark_server(b *testing.B) {
+	var word string
+	var req *http.Request
+	var w *httptest.ResponseRecorder
+	var similarRes similarResponse
+	for i := 0; i < b.N; i++ {
+		word = randStringRunes()
+		w = httptest.NewRecorder()
+		req = httptest.NewRequest("GET", "/api/v1/similar?word="+word, nil)
+		api.Router.ServeHTTP(w, req)
+		assert.Equal(b, w.Code, http.StatusOK)
+		err := json.Unmarshal(w.Body.Bytes(), &similarRes)
+		assert.NoError(b, err)
+		sortedWord := db.SortString(word)
+		for _, perm := range similarRes.Similar {
+			assert.Equal(b, sortedWord, db.SortString(perm))
+		}
+		totalRequestsSoFar++
+	}
+
+	benchmarkTestStats(b, totalRequestsSoFar)
+}
+
+func benchmarkTestStats(b *testing.B, totalRequests int) {
+	w := httptest.NewRecorder()
+	statsReq := httptest.NewRequest("GET", "/api/v1/stats", nil)
+	api.Router.ServeHTTP(w, statsReq)
+	var statsRes stats.Stats
+	err := json.Unmarshal(w.Body.Bytes(), &statsRes)
+	assert.NoError(b, err)
+	assert.Equal(b, int(statsRes.TotalRequests), totalRequests)
+}
