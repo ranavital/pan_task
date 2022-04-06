@@ -78,6 +78,6 @@ go test ./api -v
 go test ./api -v -cover
 ```
 * Run benchmark test
-* ```bash
-* go test ./api -bench=.
-* ```
+```bash
+go test ./api -bench=.
+```
