@@ -89,8 +89,7 @@ I looped through the database lines, and for each word (line), I sorted the word
 
 After the initialization of the service, the server is ready to accept and handle requests.
 
-GET similar word request: Before the request, I'm recording the start time of the request, using middleware of Gin.  
-Calling c.Next() and starting to handle the request.  
+GET similar word request: Before the request, I'm recording the start time of the request, using middleware of Gin, Calling c.Next() and starting to handle the request.  
 I'm extracting the word from the query param, sorting it, accessing the map, and retrieving the value which is a list of permutations of word.  
 I'm removing the word from the list and returning similar:[list,of,words,that,are,similar,to,provided,word] json response, finishing the request handling and the middleware calls the stats update function with the start time.  
 Inside the update func, I'm calculating the latency and updating the TotalRequests and AvgProc values with WLock of sync package.
