@@ -61,8 +61,8 @@ curl http://localhost:8000/api/v1/stats
 ```bash
 {
     "totalWords": 351075,
-    "totalRequests": 1,
-    "avgProcessingTimeNs": 57296
+    "totalRequests": 10000,
+    "avgProcessingTimeNs": 17528
 }
 ```
 
