@@ -15,4 +15,4 @@
 # vendor/
 
 # DB
-words_clean.txt
+words_clean*

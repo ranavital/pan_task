@@ -8,8 +8,10 @@ import (
 	"pan_task/config"
 	"pan_task/db"
 	"pan_task/stats"
+	"runtime"
 )
 
+// readConfigFile reads a config json structure file into a conf parameter
 func readConfigFile(path string, conf *config.Config) error {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -25,8 +27,10 @@ func readConfigFile(path string, conf *config.Config) error {
 }
 
 func init() {
+	// Init the max processes to the maximum processes useable
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	if err := readConfigFile("config/local.json", config.AppConfig); err != nil {
-		panic(err.Error())
+		panic("[init]: failed to read config file: " + err.Error())
 	}
 
 	api.InitRouter()
@@ -34,7 +38,7 @@ func init() {
 	stats.InitStats()
 
 	if err := db.InitDB(config.AppConfig.DBPath); err != nil {
-		panic(err.Error())
+		panic("[init]: failed to init db: " + err.Error())
 	}
 }
 

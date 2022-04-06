@@ -8,9 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Router global router
 var Router *gin.Engine
 
+// InitRouter inits Gin router with api v1 group of 2 endpoints on Release mode
 func InitRouter() {
+	gin.SetMode(gin.ReleaseMode)
 	Router = gin.Default()
 	apiV1 := Router.Group("/api/v1")
 	{
@@ -19,8 +22,9 @@ func InitRouter() {
 	}
 }
 
+// calcProcessingTime middleware for calculating GetSimilarWords request latency and update statistics for that request
 func calcProcessingTime(c *gin.Context) {
 	now := time.Now()
 	c.Next()
-	stats.UpdateStats(time.Since(now).Nanoseconds())
+	stats.UpdateStats(now)
 }

@@ -3,40 +3,48 @@ package stats
 import (
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-var ProgramStats *Stats
+// Singleton like object with small first letter to ensure that the changes on that struct will be only on that package
+var programStats *stats
 
-type Stats struct {
-	TotalWords          int64        `json:"totalWords"`
-	TotalRequests       int64        `json:"totalRequests"`
-	AvgProcessingTimeNs int64        `json:"avgProcessingTimeNs"`
-	lock                sync.RWMutex `json:"-"`
+type stats struct {
+	TotalWords          int64 `json:"totalWords"`
+	TotalRequests       int64 `json:"totalRequests"`
+	AvgProcessingTimeNs int64 `json:"avgProcessingTimeNs"`
+	// RWMutex to allow multiple readers
+	lock sync.RWMutex `json:"-"`
 }
 
+// InitStats inits the stats with zero values
 func InitStats() {
-	ProgramStats = &Stats{
+	programStats = &stats{
 		TotalWords:          0,
 		TotalRequests:       0,
 		AvgProcessingTimeNs: 0,
 	}
 }
 
+// GetStats get statistics on the server
 func GetStats(c *gin.Context) {
-	ProgramStats.lock.RLock()
-	defer ProgramStats.lock.RUnlock()
-	c.IndentedJSON(http.StatusOK, ProgramStats)
+	programStats.lock.RLock()
+	defer programStats.lock.RUnlock()
+	c.IndentedJSON(http.StatusOK, programStats)
 }
 
-func UpdateStats(currentAvgProcessingTimeNs int64) {
-	ProgramStats.lock.Lock()
-	defer ProgramStats.lock.Unlock()
-	ProgramStats.AvgProcessingTimeNs = (ProgramStats.AvgProcessingTimeNs*ProgramStats.TotalRequests + currentAvgProcessingTimeNs) / (ProgramStats.TotalRequests + 1)
-	ProgramStats.TotalRequests += 1
+// UpdateStats update statistics after GetSimilarWords endpoint
+func UpdateStats(startTime time.Time) {
+	programStats.lock.Lock()
+	defer programStats.lock.Unlock()
+	programStats.TotalRequests += 1
+	currentProcessingTimeNs := time.Since(startTime).Nanoseconds()
+	programStats.AvgProcessingTimeNs = (programStats.AvgProcessingTimeNs*(programStats.TotalRequests-1) + currentProcessingTimeNs) / programStats.TotalRequests
 }
 
+// SetTotalWords set total of words from DB
 func SetTotalWords(totalWords int64) {
-	ProgramStats.TotalWords = totalWords
+	programStats.TotalWords = totalWords
 }
