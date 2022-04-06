@@ -2,7 +2,7 @@ package db
 
 import (
 	"bufio"
-	"log"
+	"fmt"
 	"net/http"
 	"os"
 	"pan_task/stats"
@@ -27,7 +27,7 @@ func (s sortRunes) Len() int {
 	return len(s)
 }
 
-func sortString(s string) string {
+func SortString(s string) string {
 	r := []rune(s)
 	sort.Sort(sortRunes(r))
 	return string(r)
@@ -53,13 +53,13 @@ func InitDB(dbPath string) error {
 	// original word will be appended to list of original words as value
 	for scanner.Scan() {
 		scannedWord := scanner.Text()
-		sortedWord := sortString(scannedWord)
+		sortedWord := SortString(scannedWord)
 		DB[sortedWord] = append(DB[sortedWord], scannedWord)
 		wordsCount++
 	}
 
-	log.Println("Words scan elapsed", time.Since(start).String())
-	log.Println("Total words:", wordsCount)
+	fmt.Println("[InitDB]: Words scan elapsed", time.Since(start).String())
+	fmt.Println("[InitDB]: Total words:", wordsCount)
 	stats.SetTotalWords(wordsCount)
 	return nil
 }
@@ -85,7 +85,7 @@ func removeElementByValue(arr []string, elem string) []string {
 // GetSimilarWords returns list of permutations of word that exist in the DB
 func GetSimilarWords(c *gin.Context) {
 	word := c.Query("word")
-	similarWordsList, ok := DB[sortString(word)]
+	similarWordsList, ok := DB[SortString(word)]
 	// If the key doesn't exist, return empty string array
 	if !ok {
 		c.IndentedJSON(http.StatusOK, gin.H{"similar": []string{}})

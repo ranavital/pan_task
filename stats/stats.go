@@ -9,19 +9,19 @@ import (
 )
 
 // Singleton like object with small first letter to ensure that the changes on that struct will be only on that package
-var programStats *stats
+var programStats *Stats
 
-type stats struct {
+type Stats struct {
 	TotalWords          int64 `json:"totalWords"`
 	TotalRequests       int64 `json:"totalRequests"`
 	AvgProcessingTimeNs int64 `json:"avgProcessingTimeNs"`
 	// RWMutex to allow multiple readers
-	lock sync.RWMutex `json:"-"`
+	lock sync.RWMutex
 }
 
 // InitStats inits the stats with zero values
 func InitStats() {
-	programStats = &stats{
+	programStats = &Stats{
 		TotalWords:          0,
 		TotalRequests:       0,
 		AvgProcessingTimeNs: 0,
