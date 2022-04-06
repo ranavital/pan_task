@@ -12,8 +12,8 @@ import (
 var Router *gin.Engine
 
 // InitRouter inits Gin router with api v1 group of 2 endpoints on Release mode
-func InitRouter() {
-	gin.SetMode(gin.ReleaseMode)
+func InitRouter(mode string) {
+	gin.SetMode(mode)
 	Router = gin.Default()
 	apiV1 := Router.Group("/api/v1")
 	{
