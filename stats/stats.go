@@ -31,8 +31,9 @@ func InitStats() {
 // GetStats get statistics on the server
 func GetStats(c *gin.Context) {
 	programStats.lock.RLock()
-	defer programStats.lock.RUnlock()
-	c.IndentedJSON(http.StatusOK, programStats)
+	stats := programStats
+	programStats.lock.RUnlock()
+	c.IndentedJSON(http.StatusOK, stats)
 }
 
 // UpdateStats update statistics after GetSimilarWords endpoint

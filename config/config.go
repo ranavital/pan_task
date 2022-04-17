@@ -14,13 +14,13 @@ type Config struct {
 }
 
 // ReadConfigFile reads a config json structure file into a conf parameter
-func ReadConfigFile(path string, conf *Config) error {
+func ReadConfigFile(path string) error {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}
 
-	err = json.Unmarshal(content, conf)
+	err = json.Unmarshal(content, AppConfig)
 	if err != nil {
 		return err
 	}
