@@ -85,6 +85,16 @@ func Test_server(t *testing.T) {
 	testStats(t, totalRequestsSoFar)
 }
 
+func Test_server_empty_word(t *testing.T) {
+	var req *http.Request
+	var w *httptest.ResponseRecorder
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest("GET", "/api/v1/similar?word=", nil)
+	api.Router.ServeHTTP(w, req)
+	assert.Equal(t, w.Code, http.StatusBadRequest)
+	totalRequestsSoFar++
+}
+
 func Test_server_similar_words_list(t *testing.T) {
 	var req *http.Request
 	var w *httptest.ResponseRecorder
@@ -129,6 +139,11 @@ func randStringRunes() string {
 
 func Test_ReadConfigFile_false_path(t *testing.T) {
 	err := config.ReadConfigFile("false_path")
+	assert.Error(t, err)
+}
+
+func Test_ReadConfigFile_not_json(t *testing.T) {
+	err := config.ReadConfigFile("../README.md")
 	assert.Error(t, err)
 }
 
