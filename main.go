@@ -16,7 +16,7 @@ func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	fmt.Println("[init]: reading config file")
-	if err := config.ReadConfigFile("config/local.json", config.AppConfig); err != nil {
+	if err := config.ReadConfigFile("config/local.json"); err != nil {
 		panic("[init]: failed to read config file: " + err.Error())
 	}
 	fmt.Println("[init]: successfully read config file")

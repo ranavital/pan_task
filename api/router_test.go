@@ -11,12 +11,34 @@ import (
 	"pan_task/config"
 	"pan_task/db"
 	"pan_task/stats"
+	"sort"
 	"testing"
 	"time"
 )
 
+// String sort functionality
+type sortRunes []rune
+
+func (s sortRunes) Less(i, j int) bool {
+	return s[i] < s[j]
+}
+
+func (s sortRunes) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s sortRunes) Len() int {
+	return len(s)
+}
+
+func sortString(s string) string {
+	r := []rune(s)
+	sort.Sort(sortRunes(r))
+	return string(r)
+}
+
 func init() {
-	if err := config.ReadConfigFile("../config/test.json", config.AppConfig); err != nil {
+	if err := config.ReadConfigFile("../config/test.json"); err != nil {
 		panic("[init]: failed to read config file: " + err.Error())
 	}
 
@@ -33,7 +55,7 @@ type similarResponse struct {
 	Similar []string `json:"similar"`
 }
 
-var similarWordsList = []string{"apple", "aba", "aab", "baa", "stressed", "pan", "pan", "hrta", "abbe", "rabb", "abear"}
+var similarWordsList = []string{"apple", "aba", "aab", "baa", "stressed", "pan", "nap", "hrta", "abbe", "rabb", "abear"}
 
 // For the total requests stats test
 var totalRequestsSoFar = 0
@@ -53,9 +75,9 @@ func Test_server(t *testing.T) {
 		assert.Equal(t, w.Code, http.StatusOK)
 		err := json.Unmarshal(w.Body.Bytes(), &similarRes)
 		assert.NoError(t, err)
-		sortedWord := db.SortString(word)
+		sortedWord := sortString(word)
 		for _, perm := range similarRes.Similar {
-			assert.Equal(t, sortedWord, db.SortString(perm))
+			assert.Equal(t, sortedWord, sortString(perm))
 		}
 		totalRequestsSoFar++
 	}
@@ -74,9 +96,9 @@ func Test_server_similar_words_list(t *testing.T) {
 		assert.Equal(t, w.Code, http.StatusOK)
 		err := json.Unmarshal(w.Body.Bytes(), &similarRes)
 		assert.NoError(t, err)
-		sortedWord := db.SortString(word)
+		sortedWord := sortString(word)
 		for _, perm := range similarRes.Similar {
-			assert.Equal(t, sortedWord, db.SortString(perm))
+			assert.Equal(t, sortedWord, sortString(perm))
 		}
 		totalRequestsSoFar++
 	}
@@ -106,7 +128,7 @@ func randStringRunes() string {
 }
 
 func Test_ReadConfigFile_false_path(t *testing.T) {
-	err := config.ReadConfigFile("false_path", &config.Config{})
+	err := config.ReadConfigFile("false_path")
 	assert.Error(t, err)
 }
 
@@ -128,9 +150,9 @@ func Benchmark_server(b *testing.B) {
 		assert.Equal(b, w.Code, http.StatusOK)
 		err := json.Unmarshal(w.Body.Bytes(), &similarRes)
 		assert.NoError(b, err)
-		sortedWord := db.SortString(word)
+		sortedWord := sortString(word)
 		for _, perm := range similarRes.Similar {
-			assert.Equal(b, sortedWord, db.SortString(perm))
+			assert.Equal(b, sortedWord, sortString(perm))
 		}
 		totalRequestsSoFar++
 	}

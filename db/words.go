@@ -6,32 +6,12 @@ import (
 	"net/http"
 	"os"
 	"pan_task/stats"
-	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
-
-// String sort functionality
-type sortRunes []rune
-
-func (s sortRunes) Less(i, j int) bool {
-	return s[i] < s[j]
-}
-
-func (s sortRunes) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-
-func (s sortRunes) Len() int {
-	return len(s)
-}
-
-func SortString(s string) string {
-	r := []rune(s)
-	sort.Sort(sortRunes(r))
-	return string(r)
-}
 
 // DB global static DB
 var DB map[string][]string
@@ -53,8 +33,8 @@ func InitDB(dbPath string) error {
 	// original word will be appended to list of original words as value
 	for scanner.Scan() {
 		scannedWord := scanner.Text()
-		sortedWord := SortString(scannedWord)
-		DB[sortedWord] = append(DB[sortedWord], scannedWord)
+		strRep := getStringRepresentationOfCountingArr(getCharCountingArr(scannedWord))
+		DB[strRep] = append(DB[strRep], scannedWord)
 		wordsCount++
 	}
 
@@ -62,6 +42,26 @@ func InitDB(dbPath string) error {
 	fmt.Println("[InitDB]: Total words:", wordsCount)
 	stats.SetTotalWords(wordsCount)
 	return nil
+}
+
+func getCharCountingArr(word string) *[26]int {
+	var arr [26]int
+	const AsciiValueOfa = 97
+	for _, ch := range word {
+		arr[int(ch)-AsciiValueOfa]++
+	}
+
+	return &arr
+}
+
+func getStringRepresentationOfCountingArr(arr *[26]int) string {
+	var strRepresentation strings.Builder
+	const separator = "-"
+	for _, v := range arr {
+		strRepresentation.WriteString(strconv.Itoa(v) + separator)
+	}
+
+	return strRepresentation.String()
 }
 
 // removeElementByValue removes string element from array and returns the array.
@@ -85,7 +85,8 @@ func removeElementByValue(arr []string, elem string) []string {
 // GetSimilarWords returns list of permutations of word that exist in the DB
 func GetSimilarWords(c *gin.Context) {
 	word := c.Query("word")
-	similarWordsList, ok := DB[SortString(word)]
+	strRep := getStringRepresentationOfCountingArr(getCharCountingArr(word))
+	similarWordsList, ok := DB[strRep]
 	// If the key doesn't exist, return empty string array
 	if !ok {
 		c.IndentedJSON(http.StatusOK, gin.H{"similar": []string{}})
