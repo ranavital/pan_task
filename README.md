@@ -83,14 +83,14 @@ go test ./api -bench=.
 ```
 
 ## The algorithm
-I found out that 2 permutations are equal when you sort them. So on the init DB phase, I created a map[string][]string where the key is a sorted word, and the value is a list of the original words that are permutations of the sorted word.
+I chose to use the counting array algorithm, that counts each character in an array and creates a string representation for the counting array. So on the init DB phase, I created a map[string][]string where the key is a string representation of the counting array of a word, and the value is a list of the original words that have the same counting array string representation.
 
-I looped through the database lines, and for each word (line), I sorted the word, used it as a key, and appended the original word to the value (strings list).  
+I looped through the database lines, and for each word (line), I created the counting array of the word, used it as a key, and appended the original word to the value (strings list).  
 
 After the initialization of the service, the server is ready to accept and handle requests.
 
 GET similar word request: Before the request, I'm recording the start time of the request using Middleware of Gin, Calling c.Next(), and starting to handle the request.  
-I'm extracting the word from the query param, sorting it, accessing the map, and retrieving the value which is a list of permutations of word.  
+I'm extracting the word from the query param, creating counting array string representation, accessing the map, and retrieving the value which is a list of permutations of word.  
 I'm removing the word from the list and returning similar:[list,of,words,that,are,similar,to,provided,word] json response, finishing the request handling and the middleware calls the stats update function with the start time.  
 Inside the update func, I'm calculating the latency and updating the TotalRequests and AvgProc values with WLock of sync package.
 
