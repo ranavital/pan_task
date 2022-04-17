@@ -29,7 +29,7 @@ func InitDB(dbPath string) error {
 	wordsCount := int64(0)
 	start := time.Now()
 
-	// Read the file line-by-line and insert its sorted word to the db as key,
+	// Read the file line-by-line and insert its counting array representation string to the db as key,
 	// original word will be appended to list of original words as value
 	for scanner.Scan() {
 		scannedWord := scanner.Text()
@@ -44,6 +44,13 @@ func InitDB(dbPath string) error {
 	return nil
 }
 
+// getCharCountingArr returns a counting array of the word.
+//
+// For example, for the word 'paloalto' it will return:
+//
+// a b c d e f g h i j k l m n o p q r s t u v w x y z
+//
+// 2 0 0 0 0 0 0 0 0 0 0 2 0 0 2 1 0 0 0 1 0 0 0 0 0 0
 func getCharCountingArr(word string) *[26]int {
 	var arr [26]int
 	const AsciiValueOfa = 97
@@ -54,9 +61,14 @@ func getCharCountingArr(word string) *[26]int {
 	return &arr
 }
 
+// getStringRepresentationOfCountingArr returns a string representation of a counting arr.
+// For example, for the word 'paloalto' it will return:
+//
+// 2:0:0:0:0:0:0:0:0:0:0:2:0:0:2:1:0:0:0:1:0:0:0:0:0:0:
+// , where a colon is separating the counter for each character
 func getStringRepresentationOfCountingArr(arr *[26]int) string {
 	var strRepresentation strings.Builder
-	const separator = "-"
+	const separator = ":"
 	for _, v := range arr {
 		strRepresentation.WriteString(strconv.Itoa(v) + separator)
 	}
@@ -73,7 +85,7 @@ func removeElementByValue(arr []string, elem string) []string {
 			if len(arr) > 1 {
 				return append(arr[:i], arr[i+1:]...)
 			} else {
-				// The case where there is only one element on the array and it is the value itself
+				// The case where there is only one element on the array, and it is the value itself
 				return []string{}
 			}
 		}
@@ -85,6 +97,11 @@ func removeElementByValue(arr []string, elem string) []string {
 // GetSimilarWords returns list of permutations of word that exist in the DB
 func GetSimilarWords(c *gin.Context) {
 	word := c.Query("word")
+	if word == "" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "word parameter value is empty"})
+		return
+	}
+
 	strRep := getStringRepresentationOfCountingArr(getCharCountingArr(word))
 	similarWordsList, ok := DB[strRep]
 	// If the key doesn't exist, return empty string array
